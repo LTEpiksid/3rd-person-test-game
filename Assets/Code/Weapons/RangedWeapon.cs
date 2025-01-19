@@ -15,17 +15,23 @@ public class RangedWeapon : MonoBehaviour
     private Transform playerTransform; // Reference to the player's transform
     private AudioSource audioSource; // AudioSource component for playing the sound
 
+    private bool isShooting; // Flag to check if shooting is in progress
+    private bool isDualShootingEnabled = false; // Flag to check if dual shooting is enabled
+
     private void Start()
     {
         InitializeAudio();
         InitializePlayerTransform();
+        isShooting = false;
     }
 
     private void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && CanShoot())
         {
+            isShooting = true;
             Shoot();
+            isShooting = false;
         }
     }
 
@@ -57,24 +63,45 @@ public class RangedWeapon : MonoBehaviour
         }
     }
 
+    private bool CanShoot()
+    {
+        return Time.time - lastShootTime > shootingDelay;
+    }
+
     private void Shoot()
     {
-        if (Time.time - lastShootTime > shootingDelay)
+        if (CanShoot())
         {
             lastShootTime = Time.time;
             PlayShootingSound();
-            InstantiateProjectile();
+            if (isDualShootingEnabled)
+            {
+                InstantiateDualProjectiles();
+            }
+            else
+            {
+                InstantiateProjectile(transform.position);
+            }
         }
     }
 
-    private void InstantiateProjectile()
+    private void InstantiateProjectile(Vector3 position)
     {
         if (playerTransform != null)
         {
             Vector3 playerDirection = playerTransform.forward;
-            GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.LookRotation(playerDirection));
+            GameObject projectile = Instantiate(projectilePrefab, position, Quaternion.LookRotation(playerDirection));
             SetProjectileProperties(projectile);
         }
+    }
+
+    private void InstantiateDualProjectiles()
+    {
+        Vector3 leftPosition = transform.position + transform.right * -0.5f; // Position the left projectile
+        Vector3 rightPosition = transform.position + transform.right * 0.5f; // Position the right projectile
+
+        InstantiateProjectile(leftPosition);
+        InstantiateProjectile(rightPosition);
     }
 
     private void SetProjectileProperties(GameObject projectile)
@@ -84,5 +111,21 @@ public class RangedWeapon : MonoBehaviour
         {
             projectileController.SetProperties(projectileSpeed, damage, shootingRange);
         }
+    }
+
+    public void UpgradeProjectile()
+    {
+        projectilePrefab.transform.localScale *= 3f; // Make the projectile 3x larger
+        ProjectileController projectileController = projectilePrefab.GetComponent<ProjectileController>();
+        if (projectileController != null)
+        {
+            int upgradedDamage = projectileController.damage * 2;
+            projectileController.SetProperties(projectileController.speed, upgradedDamage, projectileController.range);
+        }
+    }
+
+    public void EnableDualShooting()
+    {
+        isDualShootingEnabled = true;
     }
 }

@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class ProjectileController : MonoBehaviour
 {
-    private float speed;
-    private int damage;
-    private float range;
+    public float speed;
+    public int damage;
+    public float range;
     private float initialPosition;
 
     private void Start()
@@ -65,6 +65,13 @@ public class ProjectileController : MonoBehaviour
     private void DestroyProjectile()
     {
         // Destroy the projectile
-        Destroy(gameObject);
+        if (Application.isEditor)
+        {
+            DestroyImmediate(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

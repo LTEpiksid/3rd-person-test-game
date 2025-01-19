@@ -6,31 +6,39 @@ public class EnemyRespawn : MonoBehaviour
     public int minSpawnCount = 1;     
     public int maxSpawnCount = 3;    
 
-    private bool isQuitting = false; 
+    public bool isQuitting = false; // Public for testing
 
     void OnApplicationQuit()
     {
-        isQuitting = true; 
+        isQuitting = true;
+        Debug.Log("Application quitting. isQuitting set to true.");
     }
 
     void OnDestroy()
     {
+        Debug.Log("OnDestroy called. isQuitting: " + isQuitting);
         if (!isQuitting)
         {
             SpawnEnemies();
         }
+        else
+        {
+            Debug.Log("OnDestroy: Not spawning enemies because isQuitting is true.");
+        }
     }
 
-    void SpawnEnemies()
+    public void SpawnEnemies() // Changed to public for testing
     {
-        int spawnCount = Random.Range(minSpawnCount, maxSpawnCount + 1);
+        int spawnCount = Random.Range(minSpawnCount, maxSpawnCount); // Changed to make upper bound exclusive
 
         for (int i = 0; i < spawnCount; i++)
         {
             Vector3 spawnPosition = transform.position + Random.onUnitSphere * 2f;
-            spawnPosition.y = 0f; 
+            spawnPosition.y = 0f;
 
-            Instantiate(respawnPrefab, spawnPosition, Quaternion.identity);
+            GameObject newPrefab = Instantiate(respawnPrefab, spawnPosition, Quaternion.identity);
+            newPrefab.name = "RespawnPrefab_" + i; // Unique naming
+            Debug.Log($"Enemy spawned at: {spawnPosition} with name: {newPrefab.name}"); // Log creation
         }
     }
 }

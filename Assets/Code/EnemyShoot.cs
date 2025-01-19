@@ -44,8 +44,8 @@ public class EnemyShoot : MonoBehaviour
     private void StopChasingAndFacePlayer()
     {
         enemyChase.StopChasing();
-
-        transform.LookAt(player);
+        Debug.Log("Facing player");
+        transform.LookAt(player); // Ensure the object faces the player
     }
 
     private bool CanShoot()
